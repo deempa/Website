@@ -33,7 +33,6 @@ app.post("/doRegister", (req, res) =>{
     let query = db.query(sql, user, (err, result) => {
         if(err) throw err;
         console.log(result);
-
         res.render("registerSuccess");
     });
 });
@@ -41,10 +40,8 @@ app.post("/doRegister", (req, res) =>{
 app.post("/doLogin", (req, res) =>{
     const email = req.body.emailAddress;
     const password = req.body.password;
-    let hashedPassword = passwordHash.generate(password);
-    console.log(hashedPassword);
-    let user = {email: email, password: hashedPassword};
-    let sql = 'SELECT id from users.users where email = "'+ email +'" and password = "' + hashedPassword + '"';
+    let user = {email: email, password: password};
+    let sql = 'SELECT password from users.users where email = "'+ email +'"';
     let query = db.query(sql, user, (err, results) => {
         if(err) throw err;
         if(results.length == 0) {
@@ -52,8 +49,9 @@ app.post("/doLogin", (req, res) =>{
             console.log(err);
             console.log(results);
         }
-        if(results.length == 1) {
-            res.render("successLogin");
+        if(results.length == 1) { 
+            if(passwordHash.verify(password, results[0].password) == true) res.render("successLogin");
+            else res.render("failedLogin");
         };
     });
 });
